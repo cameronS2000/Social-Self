@@ -1,0 +1,1801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InstaBook Generator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600;700&display=swap');
+
+/* ============================================================
+   RESET & BASE — Typography-Focused Minimal
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --black: #000;
+    --white: #FEFEFE;
+    --gray-100: #f5f5f5;
+    --gray-200: #e8e8e8;
+    --gray-300: #d4d4d4;
+    --gray-400: #a0a0a0;
+    --gray-500: #6e6e6e;
+    --gray-600: #525252;
+    --gray-800: #1a1a1a;
+    --gray-900: #111111;
+    --accent: #000;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    --font-display: Arial, Helvetica, sans-serif;
+    --mono: 'SF Mono', 'Monaco', 'Menlo', monospace;
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+::selection {
+    background: var(--black);
+    color: var(--white);
+}
+
+html { font-size: 16px; scroll-behavior: smooth; }
+body {
+    font-family: var(--font);
+    background: var(--white);
+    color: var(--black);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.container {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 48px;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+header {
+    padding: 64px 0 48px;
+    margin-bottom: 0;
+}
+
+header h1 {
+    display: none;
+}
+
+header h2 {
+    font-family: var(--font-display);
+    font-size: 120px;
+    font-weight: 700;
+    font-style: normal;
+    letter-spacing: -0.07em;
+    line-height: 0.85;
+    color: var(--black);
+    text-transform: uppercase;
+}
+
+/* ============================================================
+   PROGRESS BAR
+   ============================================================ */
+.stepper {
+    display: none;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 3px;
+    background: var(--gray-200);
+    margin-bottom: 48px;
+    position: relative;
+}
+
+.progress-bar .progress-fill {
+    height: 100%;
+    background: var(--black);
+    transition: width 0.5s var(--ease);
+    width: 25%;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+}
+
+.progress-label .progress-step {
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray-400);
+}
+
+.progress-label .progress-count {
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--gray-400);
+    letter-spacing: 0.02em;
+}
+
+/* ============================================================
+   STEP PANELS
+   ============================================================ */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.step-panel {
+    display: none;
+    min-height: 400px;
+}
+
+.step-panel.active {
+    display: block;
+    animation: fadeIn 0.4s var(--ease);
+}
+
+.step-title {
+    font-family: var(--font-display);
+    font-size: 52px;
+    font-weight: 700;
+    font-style: normal;
+    letter-spacing: -0.06em;
+    line-height: 0.9;
+    margin-bottom: 16px;
+    color: var(--black);
+    text-transform: uppercase;
+}
+
+.step-desc {
+    font-family: var(--font);
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--gray-500);
+    margin-bottom: 40px;
+    max-width: 560px;
+    line-height: 1.7;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 28px;
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.btn-primary {
+    background: var(--black);
+    color: var(--white);
+}
+
+.btn-primary:hover { background: #333; }
+
+.btn-primary:disabled {
+    background: var(--gray-300);
+    color: var(--gray-500);
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background: var(--white);
+    color: var(--black);
+    border: 1px solid var(--black);
+}
+
+.btn-secondary:hover {
+    background: var(--gray-100);
+}
+
+.btn-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--gray-200);
+}
+
+/* ============================================================
+   UPLOAD AREA (Step 1)
+   ============================================================ */
+.upload-zone {
+    border: 1.5px dashed var(--gray-300);
+    padding: 44px 40px;
+    text-align: center;
+    margin-bottom: 24px;
+    transition: border-color 0.25s var(--ease), background 0.25s var(--ease);
+    cursor: pointer;
+}
+
+.upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--black);
+    background: var(--gray-100);
+}
+
+.upload-zone.done {
+    border-style: solid;
+    border-color: var(--black);
+    background: var(--gray-100);
+}
+
+.upload-zone label {
+    cursor: pointer;
+    display: block;
+}
+
+.upload-zone .zone-title {
+    font-family: var(--font);
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.upload-zone .zone-desc {
+    font-size: 13px;
+    color: var(--gray-500);
+    line-height: 1.6;
+}
+
+.upload-zone .zone-status {
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 10px;
+    color: var(--black);
+}
+
+input[type="file"] { display: none; }
+
+/* .upload-row removed — single upload zone now */
+
+/* ============================================================
+   SELECTION GRID (Step 2)
+   ============================================================ */
+.selection-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--gray-200);
+    margin-bottom: 28px;
+    position: sticky;
+    top: 0;
+    background: rgba(254, 254, 254, 0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 20;
+}
+
+.selection-count {
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--gray-500);
+}
+
+.selection-count strong {
+    font-family: var(--font);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--black);
+    font-variant-numeric: tabular-nums;
+}
+
+.selection-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.selection-actions button {
+    padding: 6px 14px;
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: var(--white);
+    border: 1px solid var(--gray-300);
+    cursor: pointer;
+    transition: border-color 0.2s var(--ease);
+}
+
+.selection-actions button:hover { border-color: var(--black); }
+
+.month-section { margin-bottom: 56px; }
+
+.month-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid var(--gray-200);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.month-header h3 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    font-style: normal;
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
+    color: var(--black);
+}
+
+.month-header .month-count {
+    font-family: var(--font);
+    font-size: 12px;
+    color: var(--gray-400);
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+}
+
+.story-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.story-card {
+    position: relative;
+    cursor: pointer;
+    transition: opacity 0.2s var(--ease);
+    user-select: none;
+}
+
+.story-card:hover { opacity: 0.88; }
+
+.story-card img, .story-card canvas {
+    width: 100%;
+    aspect-ratio: 9 / 16;
+    object-fit: cover;
+    display: block;
+    background: var(--gray-200);
+}
+
+.story-card .card-overlay {
+    position: absolute;
+    inset: 0;
+    border: 2px solid transparent;
+    transition: border-color 0.2s var(--ease);
+    pointer-events: none;
+}
+
+.story-card.selected .card-overlay {
+    border-color: var(--black);
+}
+
+.story-card .card-check {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.6);
+    background: rgba(0,0,0,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: transparent;
+    pointer-events: none;
+    transition: all 0.2s var(--ease);
+}
+
+.story-card.selected .card-check {
+    background: var(--black);
+    border-color: var(--black);
+    color: var(--white);
+}
+
+.story-card .card-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    padding: 2px 7px;
+    font-family: var(--font);
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    pointer-events: none;
+}
+
+.story-card .card-badge.video { background: rgba(0,0,0,0.7); }
+
+.story-card .card-date {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px 8px 6px;
+    font-family: var(--font);
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    color: white;
+    background: linear-gradient(transparent, rgba(0,0,0,0.65));
+    pointer-events: none;
+}
+
+/* ============================================================
+   CONFIGURE (Step 3) — Style Packages
+   ============================================================ */
+.style-packages {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    margin-bottom: 36px;
+}
+
+.style-card {
+    border: 1px solid var(--gray-200);
+    padding: 0;
+    cursor: pointer;
+    transition: border-color 0.2s var(--ease);
+    user-select: none;
+    overflow: hidden;
+}
+
+.style-card:hover { border-color: var(--gray-400); }
+
+.style-card.selected {
+    border-color: var(--black);
+    border-width: 2px;
+}
+
+.style-card .style-preview {
+    height: 180px;
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+}
+
+.style-card .style-preview .preview-page {
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.style-card .style-preview .preview-page .preview-bar {
+    height: 28px;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    font-family: var(--font);
+    font-size: 8px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+}
+
+.style-card .style-preview .preview-page .preview-img {
+    flex: 1;
+    background: var(--gray-200);
+}
+
+.style-card .style-info {
+    padding: 16px 20px;
+    border-top: 1px solid var(--gray-200);
+}
+
+.style-card.selected .style-info {
+    background: var(--gray-100);
+}
+
+.style-card .style-name {
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.style-card .style-meta {
+    font-size: 11px;
+    color: var(--gray-500);
+    font-weight: 400;
+}
+
+.style-card .style-colors {
+    display: flex;
+    gap: 3px;
+    margin-top: 10px;
+}
+
+.style-card .style-colors .swatch {
+    width: 16px;
+    height: 16px;
+    border: 1px solid rgba(0,0,0,0.08);
+}
+
+/* Preface toggle */
+.preface-section {
+    margin-top: 56px;
+    padding-top: 36px;
+    border-top: 1px solid var(--gray-200);
+}
+
+.preface-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 20px;
+}
+
+.preface-toggle input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--black);
+    cursor: pointer;
+}
+
+.preface-toggle span {
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.preface-fields {
+    display: none;
+}
+
+.preface-fields.visible {
+    display: block;
+}
+
+.preface-fields textarea {
+    width: 100%;
+    max-width: 600px;
+    min-height: 140px;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-family: var(--font);
+    line-height: 1.7;
+    border: 1px solid var(--gray-300);
+    outline: none;
+    resize: vertical;
+    transition: border-color 0.2s var(--ease);
+}
+
+.preface-fields textarea:focus {
+    border-color: var(--black);
+}
+
+.preface-fields label {
+    display: block;
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray-500);
+    margin-bottom: 8px;
+}
+
+/* ============================================================
+   PATHS
+   ============================================================ */
+.path-input-group {
+    margin-bottom: 24px;
+}
+
+.path-input-group label {
+    display: block;
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    margin-bottom: 8px;
+}
+
+.path-input-group input[type="text"] {
+    width: 100%;
+    max-width: 700px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-family: var(--mono);
+    border: 1px solid var(--gray-300);
+    outline: none;
+    transition: border-color 0.2s var(--ease);
+}
+
+.path-input-group input[type="text"]:focus {
+    border-color: var(--black);
+}
+
+.path-input-group .path-hint {
+    font-size: 11px;
+    color: var(--gray-400);
+    margin-top: 6px;
+    line-height: 1.5;
+}
+
+/* ============================================================
+   GENERATE
+   ============================================================ */
+.generate-summary {
+    border: 1px solid var(--gray-200);
+    padding: 32px;
+    margin-bottom: 32px;
+}
+
+.generate-summary h3 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    font-style: normal;
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    color: var(--black);
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 40px;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 13px;
+}
+
+.summary-item .label { color: var(--gray-500); font-weight: 400; }
+.summary-item .value { font-weight: 600; }
+
+.download-btn {
+    padding: 14px 44px;
+    font-size: 13px;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer {
+    border-top: 1px solid var(--gray-200);
+    padding: 28px 0;
+    margin-top: 96px;
+    font-family: var(--font);
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    color: var(--gray-400);
+    text-align: center;
+}
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--gray-300); }
+::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <!-- HEADER -->
+    <header>
+        <h2>Script Generator</h2>
+    </header>
+
+    <!-- PROGRESS -->
+    <div class="progress-label">
+        <span class="progress-step" id="progress-step-label">Upload</span>
+        <span class="progress-count" id="progress-count-label">1 / 4</span>
+    </div>
+    <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+    </div>
+
+    <!-- STEP 1: UPLOAD + PATHS -->
+    <section class="step-panel active" id="step-1">
+        <h2 class="step-title">Upload</h2>
+        <p class="step-desc">Select your Instagram data export folder. The tool will find your stories and dates automatically.</p>
+
+        <div class="upload-zone" id="zone-export" onclick="document.getElementById('input-export').click()" style="max-width:600px;">
+            <label>
+                <div class="zone-title">Instagram Export Folder</div>
+                <div class="zone-desc">Select the folder you downloaded from Instagram<br>(e.g. <strong>instagram-yourname-2026-01-30-abc123</strong>)</div>
+                <div class="zone-status" id="export-status"></div>
+            </label>
+            <input type="file" id="input-export" webkitdirectory multiple />
+        </div>
+
+        <div class="path-input-group" style="margin-top: 32px;">
+            <label>Export Folder Location</label>
+            <input type="text" id="config-export-path" placeholder="/Users/yourname/Downloads/instagram-yourname-2026-01-30-abc123/" oninput="this.style.borderColor=''" />
+            <div class="path-hint">In Finder, Option + right-click your export folder and choose "Copy as Pathname", then paste here.</div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-primary" id="btn-upload-next" disabled onclick="goToStep(2)">Continue to Selection</button>
+        </div>
+    </section>
+
+    <!-- STEP 2: SELECT -->
+    <section class="step-panel" id="step-2">
+        <h2 class="step-title">Select Stories</h2>
+        <p class="step-desc">Click stories to add or remove them from your book. They will appear in chronological order.</p>
+
+        <div class="selection-toolbar">
+            <div class="selection-count"><strong id="selected-total">0</strong> stories selected</div>
+            <div class="selection-actions">
+                <button onclick="selectAll()">Select All</button>
+                <button onclick="deselectAll()">Deselect All</button>
+                <button class="btn btn-primary" id="btn-select-next-top" style="padding:6px 20px;font-size:11px;" disabled onclick="goToStep(3)">Continue</button>
+            </div>
+        </div>
+
+        <div id="story-grid-container"></div>
+
+        <div class="btn-group">
+            <button class="btn btn-secondary" onclick="goToStep(1)">Back</button>
+            <button class="btn btn-primary" id="btn-select-next" disabled onclick="goToStep(3)">Continue to Configure</button>
+        </div>
+    </section>
+
+    <!-- STEP 3: CONFIGURE -->
+    <section class="step-panel" id="step-3">
+        <h2 class="step-title">Choose Style</h2>
+        <p class="step-desc">Select a style package for your book. Each package defines the font, text color, and month bar colors.</p>
+
+        <div class="style-packages" id="style-packages"></div>
+
+        <div class="preface-section">
+            <label class="preface-toggle">
+                <input type="checkbox" id="preface-enabled" onchange="togglePreface()" />
+                <span>Include Preface</span>
+            </label>
+            <div class="preface-fields" id="preface-fields">
+                <label>Preface body text</label>
+                <textarea id="preface-body" placeholder="Write your preface text here..."></textarea>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-secondary" onclick="goToStep(2)">Back</button>
+            <button class="btn btn-primary" onclick="goToStep(4)">Continue to Generate</button>
+        </div>
+    </section>
+
+    <!-- STEP 4: GENERATE -->
+    <section class="step-panel" id="step-4">
+        <h2 class="step-title">Generate Script</h2>
+        <p class="step-desc">Review your settings and download the InDesign script.</p>
+
+        <div class="generate-summary" id="generate-summary"></div>
+
+        <button class="btn btn-primary download-btn" onclick="downloadScript()">Download .jsx Script</button>
+
+        <div class="btn-group">
+            <button class="btn btn-secondary" onclick="goToStep(3)">Back</button>
+        </div>
+    </section>
+
+    <footer>
+        <span>InstaBook Generator &mdash; Creates InDesign ExtendScript (.jsx) for Instagram story photo books</span>
+        <br><a href="#" id="debug-toggle" style="color:var(--gray-400);font-size:11px;text-decoration:none;" onclick="toggleDebug();return false;">debug</a>
+    </footer>
+</div>
+
+<script>
+/* ============================================================
+   STATE
+   ============================================================ */
+var allStories = [];        // [{id, date, isVideo, folder, ext, file, thumbUrl}]
+var selectedSet = new Set(); // set of story IDs
+var uploadedFiles = {};      // id -> File object
+var folderReady = false;
+var htmlReady = false;
+var parsedDates = {};        // "FOLDER/ID.EXT" -> date string
+
+var MONTHS_ORDER = ['January','February','March','April','May','June',
+                    'July','August','September','October','November','December'];
+
+// ============================================================
+// STYLE PACKAGES
+// ============================================================
+var STYLE_PACKAGES = [
+    {
+        id: 'default',
+        name: 'Times',
+        dateFont: 'Times',
+        dateFontStyle: 'Regular',
+        dateFontSize: 16,
+        dateColor: '#8a837d'
+    }
+];
+
+var activeStyleId = 'default';
+
+/* ============================================================
+   STEPPER NAVIGATION
+   ============================================================ */
+var stepNames = { 1: 'Upload', 2: 'Select', 3: 'Configure', 4: 'Generate' };
+
+function goToStep(n) {
+    // Validation
+    if (n === 2 && (!folderReady || !htmlReady)) return;
+    if (n === 3 && selectedSet.size === 0) return;
+
+    // Update progress bar
+    var pct = (n / 4) * 100;
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-step-label').textContent = stepNames[n];
+    document.getElementById('progress-count-label').textContent = n + ' / 4';
+
+    // Update panels
+    document.querySelectorAll('.step-panel').forEach(function(p) {
+        p.classList.remove('active');
+    });
+    document.getElementById('step-' + n).classList.add('active');
+
+    // Step-specific init
+    if (n === 2) buildSelectionGrid();
+    if (n === 3) buildStylePackages();
+    if (n === 4) buildSummary();
+
+    window.scrollTo(0, 0);
+}
+
+/* ============================================================
+   STEP 1: FILE UPLOAD — single export folder
+   ============================================================ */
+document.getElementById('input-export').addEventListener('change', function(e) {
+    var files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    uploadedFiles = {};
+    var imageCount = 0;
+    var videoCount = 0;
+    var storiesHtmlFile = null;
+    var rootFolder = ''; // top-level folder name from webkitRelativePath
+
+    files.forEach(function(f) {
+        var path = f.webkitRelativePath || f.name;
+        var parts = path.split('/');
+
+        // Capture root folder name (first segment)
+        if (!rootFolder && parts.length > 1) rootFolder = parts[0];
+
+        // Look for stories.html — could be at various paths:
+        // root/your_instagram_activity/media/stories.html
+        // root/media/stories.html
+        // or just stories.html somewhere
+        if (f.name === 'stories.html' && path.indexOf('media') !== -1) {
+            storiesHtmlFile = f;
+        }
+
+        // Look for story media in YYYYMM folders under media/stories/
+        var filename = parts[parts.length - 1];
+        var folder = parts.length >= 2 ? parts[parts.length - 2] : '';
+
+        if (/^\d{6}$/.test(folder)) {
+            var ext = filename.split('.').pop().toLowerCase();
+            if (ext === 'jpg' || ext === 'jpeg' || ext === 'png') {
+                uploadedFiles[folder + '/' + filename] = f;
+                imageCount++;
+            } else if (ext === 'mp4' || ext === 'mov') {
+                uploadedFiles[folder + '/' + filename] = f;
+                videoCount++;
+            }
+        }
+    });
+
+    var status = document.getElementById('export-status');
+
+    if (imageCount === 0 && videoCount === 0) {
+        status.textContent = 'No story media found. Make sure you selected the Instagram export folder.';
+        return;
+    }
+
+    folderReady = true;
+    var statusParts = [imageCount + ' images, ' + videoCount + ' videos'];
+
+    // Auto-fill export path if empty — use folder name with ~/Downloads/ guess
+    var pathInput = document.getElementById('config-export-path');
+    if (!pathInput.value && rootFolder) {
+        // Pre-fill with the detected folder name in a common location
+        pathInput.value = '/Users/YOURUSERNAME/Downloads/' + rootFolder + '/';
+        pathInput.style.borderColor = '#FFD166';
+        pathInput.focus();
+        // Select just the "YOURUSERNAME" portion so they can type over it
+        var selStart = '/Users/'.length;
+        var selEnd = selStart + 'YOURUSERNAME'.length;
+        pathInput.setSelectionRange(selStart, selEnd);
+    }
+
+    // Auto-parse stories.html if found
+    if (storiesHtmlFile) {
+        var reader = new FileReader();
+        reader.onload = function(ev) {
+            parseStoriesHtml(ev.target.result);
+            var dateCount = Object.keys(parsedDates).length;
+            htmlReady = true;
+            statusParts.push(dateCount + ' dates parsed');
+            status.textContent = statusParts.join(' · ');
+            document.getElementById('zone-export').classList.add('done');
+            checkUploadReady();
+        };
+        reader.readAsText(storiesHtmlFile);
+    } else {
+        statusParts.push('stories.html not found — dates unavailable');
+        status.textContent = statusParts.join(' · ');
+        document.getElementById('zone-export').classList.add('done');
+        // Still allow proceeding, but dates will be missing
+        htmlReady = true;
+        checkUploadReady();
+    }
+});
+
+function parseStoriesHtml(html) {
+    // Instagram stories.html format:
+    // src="media/stories/YYYYMM/ID.ext" ... class="_3-94 _a6-o">DATE</div>
+    parsedDates = {};
+
+    var pattern = /src="media\/stories\/(\d{6})\/(\d+)\.(jpg|mp4|mov|jpeg|png)"[^]*?class="_3-94 _a6-o">\s*(.*?)\s*<\/div>/g;
+    var match;
+    while ((match = pattern.exec(html)) !== null) {
+        var folder = match[1];
+        var id = match[2];
+        var ext = match[3];
+        var rawDate = match[4].trim();
+
+        // Date from Instagram: "Feb 08, 2026 7:56 am" — strip time portion
+        var cleanDate = rawDate.replace(/\s+\d{1,2}:\d{2}\s*(am|pm)/i, '').trim();
+
+        // Convert short month to full: "Feb 08, 2026" -> "February 08, 2026"
+        var shortMonths = {
+            'Jan': 'January', 'Feb': 'February', 'Mar': 'March',
+            'Apr': 'April', 'May': 'May', 'Jun': 'June',
+            'Jul': 'July', 'Aug': 'August', 'Sep': 'September',
+            'Oct': 'October', 'Nov': 'November', 'Dec': 'December'
+        };
+
+        var dateParts = cleanDate.split(' ');
+        if (dateParts.length >= 3 && shortMonths[dateParts[0]]) {
+            dateParts[0] = shortMonths[dateParts[0]];
+            cleanDate = dateParts.join(' ');
+        }
+
+        var key = folder + '/' + id + '.' + ext;
+        parsedDates[key] = { date: cleanDate, folder: folder, id: id, ext: ext };
+    }
+}
+
+function checkUploadReady() {
+    if (folderReady && htmlReady) {
+        matchStories();
+        document.getElementById('btn-upload-next').disabled = false;
+    }
+}
+
+function getBasePath() {
+    var exportPath = document.getElementById('config-export-path').value || '/path/to/instagram-export/';
+    if (exportPath.charAt(exportPath.length - 1) !== '/') exportPath += '/';
+    return exportPath + 'media/stories/';
+}
+
+function getThumbPath() {
+    return getBasePath() + '_thumbnails/';
+}
+
+function matchStories() {
+    allStories = [];
+
+    Object.keys(parsedDates).forEach(function(key) {
+        var info = parsedDates[key];
+        var isVideo = (info.ext === 'mp4' || info.ext === 'mov');
+        var fileKey = info.folder + '/' + info.id + '.' + info.ext;
+
+        if (uploadedFiles[fileKey]) {
+            allStories.push({
+                id: info.id,
+                date: info.date,
+                isVideo: isVideo,
+                folder: info.folder,
+                ext: info.ext,
+                file: (uploadedFiles[fileKey] === 'debug') ? null : uploadedFiles[fileKey],
+                thumbUrl: null
+            });
+        }
+    });
+
+    // Sort chronologically
+    allStories.sort(function(a, b) {
+        return new Date(a.date) - new Date(b.date);
+    });
+}
+
+/* ============================================================
+   STEP 2: SELECTION GRID
+   ============================================================ */
+function buildSelectionGrid() {
+    var container = document.getElementById('story-grid-container');
+    container.innerHTML = '';
+
+    // Group by month-year
+    var groups = {};
+    allStories.forEach(function(story) {
+        var parts = story.date.split(' ');
+        var monthYear = parts[0] + ' ' + parts[2]; // "May 2022"
+        if (!groups[monthYear]) groups[monthYear] = [];
+        groups[monthYear].push(story);
+    });
+
+    Object.keys(groups).forEach(function(monthYear) {
+        var stories = groups[monthYear];
+
+        var section = document.createElement('div');
+        section.className = 'month-section';
+
+        var header = document.createElement('div');
+        header.className = 'month-header';
+
+        var selectedInMonth = stories.filter(function(s) { return selectedSet.has(s.id); }).length;
+
+        header.innerHTML = '<h3>' + monthYear + '</h3>' +
+            '<span class="month-count" data-monthyear="' + monthYear + '">' +
+            '<span class="month-sel-count">' + selectedInMonth + '</span> / ' + stories.length + ' selected</span>';
+        section.appendChild(header);
+
+        var grid = document.createElement('div');
+        grid.className = 'story-grid';
+
+        stories.forEach(function(story) {
+            var card = document.createElement('div');
+            card.className = 'story-card' + (selectedSet.has(story.id) ? ' selected' : '');
+            card.setAttribute('data-id', story.id);
+            card.setAttribute('data-monthyear', monthYear);
+
+            card.addEventListener('click', function() {
+                toggleStory(story.id, monthYear);
+            });
+
+            // Image / video thumbnail
+            if (!story.file) {
+                // Debug mode — show placeholder with file path hint
+                var placeholder = document.createElement('div');
+                placeholder.style.cssText = 'width:100%;aspect-ratio:9/16;background:var(--gray-200);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--gray-500);padding:8px;text-align:center;word-break:break-all;';
+                placeholder.textContent = story.folder + '/' + story.id + '.' + story.ext;
+                card.appendChild(placeholder);
+            } else if (!story.isVideo) {
+                var img = document.createElement('img');
+                img.src = URL.createObjectURL(story.file);
+                img.loading = 'lazy';
+                card.appendChild(img);
+            } else {
+                // Extract video frame
+                var canvas = document.createElement('canvas');
+                canvas.width = 360;
+                canvas.height = 640;
+                card.appendChild(canvas);
+                extractVideoFrame(story.file, canvas);
+            }
+
+            // Badge
+            var badge = document.createElement('div');
+            badge.className = 'card-badge' + (story.isVideo ? ' video' : '');
+            badge.textContent = story.isVideo ? 'Video' : 'Photo';
+            card.appendChild(badge);
+
+            // Check
+            var check = document.createElement('div');
+            check.className = 'card-check';
+            check.innerHTML = '&#10003;';
+            card.appendChild(check);
+
+            // Date
+            var dateLabel = document.createElement('div');
+            dateLabel.className = 'card-date';
+            dateLabel.textContent = story.date;
+            card.appendChild(dateLabel);
+
+            // Overlay
+            var overlay = document.createElement('div');
+            overlay.className = 'card-overlay';
+            card.appendChild(overlay);
+
+            grid.appendChild(card);
+        });
+
+        section.appendChild(grid);
+        container.appendChild(section);
+    });
+
+    updateSelectionCount();
+}
+
+function extractVideoFrame(file, canvas) {
+    var url = URL.createObjectURL(file);
+    var video = document.createElement('video');
+    video.muted = true;
+    video.preload = 'auto';
+
+    video.addEventListener('loadeddata', function() {
+        video.currentTime = 0.1;
+    });
+
+    video.addEventListener('seeked', function() {
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+    });
+
+    video.src = url;
+}
+
+function toggleStory(id, monthYear) {
+    if (selectedSet.has(id)) {
+        selectedSet.delete(id);
+    } else {
+        selectedSet.add(id);
+    }
+
+    // Update card visual
+    var card = document.querySelector('.story-card[data-id="' + id + '"]');
+    if (card) card.classList.toggle('selected');
+
+    // Update month count
+    updateMonthCount(monthYear);
+    updateSelectionCount();
+}
+
+function updateMonthCount(monthYear) {
+    var cards = document.querySelectorAll('.story-card[data-monthyear="' + monthYear + '"]');
+    var count = 0;
+    cards.forEach(function(c) {
+        if (c.classList.contains('selected')) count++;
+    });
+    var span = document.querySelector('[data-monthyear="' + monthYear + '"] .month-sel-count');
+    if (span) span.textContent = count;
+}
+
+function updateSelectionCount() {
+    document.getElementById('selected-total').textContent = selectedSet.size;
+    var disabled = (selectedSet.size === 0);
+    document.getElementById('btn-select-next').disabled = disabled;
+    document.getElementById('btn-select-next-top').disabled = disabled;
+}
+
+function selectAll() {
+    allStories.forEach(function(s) { selectedSet.add(s.id); });
+    document.querySelectorAll('.story-card').forEach(function(c) { c.classList.add('selected'); });
+    document.querySelectorAll('.month-sel-count').forEach(function(el) {
+        var monthYear = el.closest('[data-monthyear]').getAttribute('data-monthyear');
+        var cards = document.querySelectorAll('.story-card[data-monthyear="' + monthYear + '"]');
+        el.textContent = cards.length;
+    });
+    updateSelectionCount();
+}
+
+function deselectAll() {
+    selectedSet.clear();
+    document.querySelectorAll('.story-card').forEach(function(c) { c.classList.remove('selected'); });
+    document.querySelectorAll('.month-sel-count').forEach(function(el) { el.textContent = '0'; });
+    updateSelectionCount();
+}
+
+/* ============================================================
+   STEP 3: STYLE PACKAGES
+   ============================================================ */
+function getActiveStyle() {
+    for (var i = 0; i < STYLE_PACKAGES.length; i++) {
+        if (STYLE_PACKAGES[i].id === activeStyleId) return STYLE_PACKAGES[i];
+    }
+    return STYLE_PACKAGES[0];
+}
+
+function buildStylePackages() {
+    var container = document.getElementById('style-packages');
+    container.innerHTML = '';
+
+    STYLE_PACKAGES.forEach(function(pkg) {
+        var card = document.createElement('div');
+        card.className = 'style-card' + (pkg.id === activeStyleId ? ' selected' : '');
+        card.setAttribute('data-style-id', pkg.id);
+
+        card.addEventListener('click', function() {
+            activeStyleId = pkg.id;
+            document.querySelectorAll('.style-card').forEach(function(c) { c.classList.remove('selected'); });
+            card.classList.add('selected');
+        });
+
+        // Preview: two "pages" side by side simulating a spread
+        var preview = document.createElement('div');
+        preview.className = 'style-preview';
+        preview.style.background = '#e8e8e8';
+
+        // Left page (verso) — image with date below at outside (left) edge
+        var leftPage = document.createElement('div');
+        leftPage.className = 'preview-page';
+        leftPage.style.background = '#fff';
+        leftPage.style.marginRight = '1px';
+        leftPage.style.padding = '8px 6px 12px 18px';
+        leftPage.style.display = 'flex';
+        leftPage.style.flexDirection = 'column';
+
+        var leftImg = document.createElement('div');
+        leftImg.className = 'preview-img';
+        leftImg.style.background = '#c4c4c4';
+        leftImg.style.flex = '1';
+        leftPage.appendChild(leftImg);
+
+        var leftDate = document.createElement('div');
+        leftDate.style.cssText = 'font-size:7px;color:' + pkg.dateColor + ';margin-top:4px;text-align:left;letter-spacing:0.02em;';
+        leftDate.textContent = '03.15.24';
+        leftPage.appendChild(leftDate);
+
+        // Right page (recto) — image with date below at outside (right) edge
+        var rightPage = document.createElement('div');
+        rightPage.className = 'preview-page';
+        rightPage.style.background = '#fff';
+        rightPage.style.padding = '8px 18px 12px 6px';
+        rightPage.style.display = 'flex';
+        rightPage.style.flexDirection = 'column';
+
+        var rightImg = document.createElement('div');
+        rightImg.className = 'preview-img';
+        rightImg.style.background = '#c4c4c4';
+        rightImg.style.flex = '1';
+        rightPage.appendChild(rightImg);
+
+        var rightDate = document.createElement('div');
+        rightDate.style.cssText = 'font-size:7px;color:' + pkg.dateColor + ';margin-top:4px;text-align:right;letter-spacing:0.02em;';
+        rightDate.textContent = '07.22.24';
+        rightPage.appendChild(rightDate);
+
+        preview.appendChild(leftPage);
+        preview.appendChild(rightPage);
+        card.appendChild(preview);
+
+        // Info
+        var info = document.createElement('div');
+        info.className = 'style-info';
+
+        var name = document.createElement('div');
+        name.className = 'style-name';
+        name.textContent = pkg.name;
+
+        var meta = document.createElement('div');
+        meta.className = 'style-meta';
+        meta.textContent = pkg.dateFont + ' · ' + pkg.dateFontSize + 'pt';
+
+        info.appendChild(name);
+        info.appendChild(meta);
+        card.appendChild(info);
+
+        container.appendChild(card);
+    });
+}
+
+function togglePreface() {
+    var fields = document.getElementById('preface-fields');
+    var enabled = document.getElementById('preface-enabled').checked;
+    fields.classList.toggle('visible', enabled);
+}
+
+/* ============================================================
+   STEP 4: SUMMARY & GENERATE
+   ============================================================ */
+function buildSummary() {
+    var selectedStories = getSelectedStoriesSorted();
+
+    var videoCount = selectedStories.filter(function(s) { return s.isVideo; }).length;
+    var photoCount = selectedStories.length - videoCount;
+
+    // Count unique months
+    var monthSet = new Set();
+    selectedStories.forEach(function(s) {
+        monthSet.add(s.date.split(' ')[0]);
+    });
+
+    var style = getActiveStyle();
+    var exportPath = document.getElementById('config-export-path').value || '(not set)';
+
+    var html = '<h3>Summary</h3><div class="summary-grid">';
+    html += summaryRow('Total Stories', selectedStories.length);
+    html += summaryRow('Photos', photoCount);
+    html += summaryRow('Videos', videoCount);
+    html += summaryRow('Months Covered', monthSet.size);
+    var prefaceEnabled = document.getElementById('preface-enabled').checked;
+    var prefacePages = prefaceEnabled ? 2 : 0;
+    var totalPg = 1 + prefacePages + selectedStories.length;
+    html += summaryRow('Preface', prefaceEnabled ? 'Yes (1 spread)' : 'No');
+    html += summaryRow('Total Pages', totalPg + ' (title' + (prefaceEnabled ? ' + preface' : '') + ' + stories)');
+    html += summaryRow('Document Size', '6" &times; 7.5"');
+    html += summaryRow('Style', style.name);
+    html += summaryRow('Date Font', style.dateFont);
+    html += summaryRow('Export Path', '<span style="font-family:var(--mono);font-size:12px">' + escapeHtml(exportPath) + '</span>');
+    html += '</div>';
+
+    document.getElementById('generate-summary').innerHTML = html;
+}
+
+function summaryRow(label, value) {
+    return '<div class="summary-item"><span class="label">' + label + '</span><span class="value">' + value + '</span></div>';
+}
+
+function escapeHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function getSelectedStoriesSorted() {
+    return allStories.filter(function(s) {
+        return selectedSet.has(s.id);
+    });
+    // Already sorted chronologically from matchStories()
+}
+
+/* ============================================================
+   RGB → CMYK CONVERSION
+   ============================================================ */
+function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : { r: 0, g: 0, b: 0 };
+}
+
+function rgbToCmyk(r, g, b) {
+    if (r === 0 && g === 0 && b === 0) return [0, 0, 0, 100];
+
+    var c = 1 - (r / 255);
+    var m = 1 - (g / 255);
+    var y = 1 - (b / 255);
+    var k = Math.min(c, m, y);
+
+    if (k === 1) return [0, 0, 0, 100];
+
+    c = Math.round(((c - k) / (1 - k)) * 100);
+    m = Math.round(((m - k) / (1 - k)) * 100);
+    y = Math.round(((y - k) / (1 - k)) * 100);
+    k = Math.round(k * 100);
+
+    return [c, m, y, k];
+}
+
+/* ============================================================
+   SCRIPT GENERATOR
+   ============================================================ */
+function generateScript() {
+    var stories = getSelectedStoriesSorted();
+    var style = getActiveStyle();
+    var basePath = getBasePath();
+
+    // Build story array
+    var storyLines = stories.map(function(s) {
+        return '    ["' + s.id + '", "' + s.date + '", ' + s.isVideo + ', "' + s.folder + '"]';
+    });
+
+    // Date color CMYK
+    var dateRgb = hexToRgb(style.dateColor);
+    var dateCmyk = rgbToCmyk(dateRgb.r, dateRgb.g, dateRgb.b);
+
+    // Preface
+    var prefaceEnabled = document.getElementById('preface-enabled').checked;
+    var prefaceBody = document.getElementById('preface-body').value || '';
+    var prefacePages = prefaceEnabled ? 2 : 0;
+
+    var script = '/*\n' +
+        ' * PlaceInstagramStories.jsx\n' +
+        ' * InDesign ExtendScript — Generated by Instant Story Book\n' +
+        ' *\n' +
+        ' * Places ' + stories.length + ' Instagram stories on individual pages.\n' +
+        ' * Document: 6" x 7.5" facing pages with 1/8" bleed.\n' +
+        ' *\n' +
+        ' * LAYOUT:\n' +
+        ' *   - Image within margins (Outside 2.375", Inside 0.75", Top 0.92", Bottom 1.5")\n' +
+        ' *   - Date (MM.DD.YY) centered between image bottom and page bottom, at outside edge\n' +
+        ' *   - Font: OPTIEngraversOldEnglish\n' +
+        ' */\n\n' +
+        '// ============================================================\n' +
+        '// CURATED SELECTION — ' + stories.length + ' stories\n' +
+        '// Each entry: [id, date, isVideo, folder]\n' +
+        '// ============================================================\n' +
+        'var selectedStories = [\n' +
+        storyLines.join(',\n') + '\n' +
+        '];\n\n' +
+        '// ============================================================\n' +
+        '// CONFIGURATION\n' +
+        '// ============================================================\n' +
+        'var BASE_PATH = "' + escapeJsx(basePath) + '";\n' +
+        'var FFMPEG = "/opt/homebrew/bin/ffmpeg";\n\n' +
+        'var PAGE_WIDTH = 6;        // inches\n' +
+        'var PAGE_HEIGHT = 7.5;     // inches\n' +
+        'var BLEED = 0.125;         // 1/8 inch\n\n' +
+        '// Margins\n' +
+        'var MARGIN_TOP = 0.92;\n' +
+        'var MARGIN_BOTTOM = 1.5;\n' +
+        'var MARGIN_INSIDE = 0.75;\n' +
+        'var MARGIN_OUTSIDE = 2.375;\n\n' +
+        '// Date styling\n' +
+        'var DATE_FONT = "' + escapeJsx(style.dateFont) + '";\n' +
+        'var DATE_FONT_STYLE = "' + style.dateFontStyle + '";\n' +
+        'var DATE_FONT_SIZE = ' + style.dateFontSize + ';\n' +
+        'var DATE_COLOR_CMYK = [' + dateCmyk.join(', ') + '];\n\n' +
+        '// Color band (cycles per month, from outer bleed edge)\n' +
+        'var BAND_WIDTH = 0.35;\n' +
+        'var BAND_COLORS_CMYK = [[0,100,41,7],[0,16,83,2],[93,18,0,13]];\n' +
+        'var BAND_COLOR_NAMES = ["Band Pink","Band Yellow","Band Blue"];\n\n' +
+        '// ============================================================\n' +
+        '// HELPERS\n' +
+        '// ============================================================\n' +
+        'function formatDate(dateStr) {\n' +
+        '    // Input: "Month DD, YYYY" → Output: "MM.DD.YY"\n' +
+        '    var months = {\n' +
+        '        "January":"01","February":"02","March":"03","April":"04",\n' +
+        '        "May":"05","June":"06","July":"07","August":"08",\n' +
+        '        "September":"09","October":"10","November":"11","December":"12"\n' +
+        '    };\n' +
+        '    var parts = dateStr.split(" ");\n' +
+        '    var monthNum = months[parts[0]] || "00";\n' +
+        '    var day = parts[1].replace(",", "");\n' +
+        '    if (day.length < 2) day = "0" + day;\n' +
+        '    var year = parts[2].substring(2); // last 2 digits\n' +
+        '    return monthNum + "." + day + "." + year;\n' +
+        '}\n\n' +
+        '// ============================================================\n' +
+        '// COLLECT IMAGES\n' +
+        '// ============================================================\n' +
+        'function collectImages() {\n' +
+        '    var images = [];\n' +
+        '    var baseFolder = Folder(BASE_PATH);\n\n' +
+        '    if (!baseFolder.exists) {\n' +
+        '        alert("Base folder not found:\\n" + baseFolder.fsName);\n' +
+        '        return images;\n' +
+        '    }\n\n' +
+        '    for (var i = 0; i < selectedStories.length; i++) {\n' +
+        '        var entry = selectedStories[i];\n' +
+        '        var id = entry[0];\n' +
+        '        var date = entry[1];\n' +
+        '        var isVideo = entry[2];\n' +
+        '        var folder = entry[3];\n\n' +
+        '        var imgFile;\n' +
+        '        if (isVideo) {\n' +
+        '            imgFile = File(BASE_PATH + folder + "/" + id + "_frame.jpg");\n' +
+        '            if (!imgFile.exists) {\n' +
+        '                var mp4 = File(BASE_PATH + folder + "/" + id + ".mp4");\n' +
+        '                if (mp4.exists) {\n' +
+        '                    var cmd = FFMPEG + " -y -i \\"" + mp4.fsName + "\\" -vframes 1 -q:v 2 \\"" + imgFile.fsName + "\\"";\n' +
+        '                    app.system(cmd);\n' +
+        '                }\n' +
+        '            }\n' +
+        '        } else {\n' +
+        '            imgFile = File(BASE_PATH + folder + "/" + id + ".jpg");\n' +
+        '        }\n\n' +
+        '        if (imgFile.exists) {\n' +
+        '            images.push({ file: imgFile, date: date, folder: folder });\n' +
+        '        } else {\n' +
+        '            $.writeln("Missing file: " + imgFile.fsName);\n' +
+        '        }\n' +
+        '    }\n\n' +
+        '    return images;\n' +
+        '}\n\n' +
+        '// ============================================================\n' +
+        '// PLACE IMAGE ON A PAGE\n' +
+        '// ============================================================\n' +
+        'function placeImageOnPage(doc, page, imgFile, dateText, dateStyle, bandSwatch) {\n' +
+        '    var pageIndex = page.documentOffset;\n' +
+        '    var isRecto = (pageIndex % 2 === 0);\n\n' +
+        '    // --- Color band: full height incl. bleed, flush to outer edge ---\n' +
+        '    var bandTop = -BLEED, bandBottom = PAGE_HEIGHT + BLEED;\n' +
+        '    var bandLeft, bandRight;\n' +
+        '    if (isRecto) {\n' +
+        '        bandLeft  = PAGE_WIDTH + BLEED - BAND_WIDTH;\n' +
+        '        bandRight = PAGE_WIDTH + BLEED;\n' +
+        '    } else {\n' +
+        '        bandLeft  = -BLEED;\n' +
+        '        bandRight = -BLEED + BAND_WIDTH;\n' +
+        '    }\n' +
+        '    page.rectangles.add({\n' +
+        '        geometricBounds: [bandTop, bandLeft, bandBottom, bandRight],\n' +
+        '        fillColor: bandSwatch,\n' +
+        '        strokeWeight: 0,\n' +
+        '        strokeColor: doc.swatches.itemByName("None")\n' +
+        '    });\n\n' +
+        '    // Calculate image frame bounds from margins\n' +
+        '    var imgTop = MARGIN_TOP;\n' +
+        '    var imgBottom = PAGE_HEIGHT - MARGIN_BOTTOM;\n' +
+        '    var imgLeft, imgRight;\n\n' +
+        '    if (isRecto) {\n' +
+        '        imgLeft = MARGIN_INSIDE;\n' +
+        '        imgRight = PAGE_WIDTH - MARGIN_OUTSIDE;\n' +
+        '    } else {\n' +
+        '        imgLeft = MARGIN_OUTSIDE;\n' +
+        '        imgRight = PAGE_WIDTH - MARGIN_INSIDE;\n' +
+        '    }\n\n' +
+        '    var imgFrame = page.rectangles.add({\n' +
+        '        geometricBounds: [imgTop, imgLeft, imgBottom, imgRight],\n' +
+        '        strokeWeight: 0,\n' +
+        '        strokeColor: doc.swatches.itemByName("None")\n' +
+        '    });\n\n' +
+        '    imgFrame.place(imgFile);\n' +
+        '    imgFrame.fit(FitOptions.FILL_PROPORTIONALLY);\n' +
+        '    imgFrame.fit(FitOptions.CENTER_CONTENT);\n\n' +
+        '    // --- Date: outside corner, centered vertically between image bottom and page bottom ---\n' +
+        '    var dateStr = formatDate(dateText);\n' +
+        '    var dateGapTop = imgBottom;\n' +
+        '    var dateGapBottom = PAGE_HEIGHT;\n' +
+        '    var dateFrameHeight = 0.6;\n' +
+        '    var dateCenterY = (dateGapTop + dateGapBottom) / 2;\n' +
+        '    var dateTop = dateCenterY - dateFrameHeight / 2;\n' +
+        '    var dateBtm = dateCenterY + dateFrameHeight / 2;\n\n' +
+        '    // Position in the outside margin area (beyond the image)\n' +
+        '    var dateLeft, dateRight, dateJust;\n' +
+        '    if (isRecto) {\n' +
+        '        // Outside is right — date frame spans the outside margin\n' +
+        '        dateLeft = PAGE_WIDTH - MARGIN_OUTSIDE;\n' +
+        '        dateRight = PAGE_WIDTH;\n' +
+        '        dateJust = Justification.CENTER_ALIGN;\n' +
+        '    } else {\n' +
+        '        // Outside is left — date frame spans the outside margin\n' +
+        '        dateLeft = 0;\n' +
+        '        dateRight = MARGIN_OUTSIDE;\n' +
+        '        dateJust = Justification.CENTER_ALIGN;\n' +
+        '    }\n\n' +
+        '    var dateFrame = page.textFrames.add({\n' +
+        '        geometricBounds: [dateTop, dateLeft, dateBtm, dateRight]\n' +
+        '    });\n\n' +
+        '    dateFrame.contents = dateStr;\n' +
+        '    dateFrame.texts[0].appliedCharacterStyle = dateStyle;\n' +
+        '    dateFrame.texts[0].justification = dateJust;\n' +
+        '    dateFrame.textFramePreferences.verticalJustification = VerticalJustification.CENTER_ALIGN;\n' +
+        '}\n\n' +
+        '// ============================================================\n' +
+        '// MAIN\n' +
+        '// ============================================================\n' +
+        'function main() {\n' +
+        '    app.scriptPreferences.userInteractionLevel = UserInteractionLevels.INTERACT_WITH_ALL;\n\n' +
+        '    var images = collectImages();\n\n' +
+        '    if (images.length === 0) {\n' +
+        '        alert("No images found. Check the folder path:\\n" + BASE_PATH);\n' +
+        '        return;\n' +
+        '    }\n\n' +
+        '    var proceed = confirm(\n' +
+        '        "Found " + images.length + " stories.\\n\\n" +\n' +
+        '        "Document: 6\\" x 7.5\\" facing pages with 1/8\\" bleed.\\n" +\n' +
+        '        "Margins: Outside 2 3/8\\", Inside 3/4\\", Top 0.92\\", Bottom 1 1/2\\"\\n\\n" +\n' +
+        '        "Proceed?"\n' +
+        '    );\n\n' +
+        '    if (!proceed) return;\n\n' +
+        '    var doc = app.documents.add();\n' +
+        '    with (doc.documentPreferences) {\n' +
+        '        pageWidth = PAGE_WIDTH + "in";\n' +
+        '        pageHeight = PAGE_HEIGHT + "in";\n' +
+        '        facingPages = true;\n' +
+        '        pagesPerDocument = 1;\n' +
+        '        documentBleedTopOffset = BLEED + "in";\n' +
+        '        documentBleedBottomOffset = BLEED + "in";\n' +
+        '        documentBleedInsideOrLeftOffset = BLEED + "in";\n' +
+        '        documentBleedOutsideOrRightOffset = BLEED + "in";\n' +
+        '    }\n' +
+        '    doc.viewPreferences.horizontalMeasurementUnits = MeasurementUnits.INCHES;\n' +
+        '    doc.viewPreferences.verticalMeasurementUnits = MeasurementUnits.INCHES;\n\n' +
+        '    // Set margins — for facing pages, left=inside, right=outside\n' +
+        '    // InDesign mirrors automatically for verso pages\n' +
+        '    doc.marginPreferences.top = MARGIN_TOP;\n' +
+        '    doc.marginPreferences.bottom = MARGIN_BOTTOM;\n' +
+        '    doc.marginPreferences.left = MARGIN_INSIDE;\n' +
+        '    doc.marginPreferences.right = MARGIN_OUTSIDE;\n\n' +
+        '    // Create date color swatch\n' +
+        '    try {\n' +
+        '        var dc = doc.colors.itemByName("Date Color");\n' +
+        '        dc.name;\n' +
+        '    } catch (e) {\n' +
+        '        doc.colors.add({\n' +
+        '            name: "Date Color",\n' +
+        '            model: ColorModel.PROCESS,\n' +
+        '            space: ColorSpace.CMYK,\n' +
+        '            colorValue: DATE_COLOR_CMYK\n' +
+        '        });\n' +
+        '    }\n\n' +
+        '    // Create date character style\n' +
+        '    var dateStyle;\n' +
+        '    try {\n' +
+        '        dateStyle = doc.characterStyles.itemByName("Story Date");\n' +
+        '        dateStyle.name;\n' +
+        '    } catch (e) {\n' +
+        '        dateStyle = doc.characterStyles.add({ name: "Story Date" });\n' +
+        '    }\n' +
+        '    dateStyle.appliedFont = DATE_FONT;\n' +
+        '    dateStyle.fontStyle = DATE_FONT_STYLE;\n' +
+        '    dateStyle.pointSize = DATE_FONT_SIZE;\n' +
+        '    dateStyle.fillColor = doc.colors.itemByName("Date Color");\n' +
+        '    dateStyle.tracking = -20;\n\n' +
+        '    // Create band color swatches\n' +
+        '    var bandSwatches = [];\n' +
+        '    for (var b = 0; b < BAND_COLORS_CMYK.length; b++) {\n' +
+        '        try { var bs = doc.colors.itemByName(BAND_COLOR_NAMES[b]); bs.name; }\n' +
+        '        catch (e) {\n' +
+        '            doc.colors.add({ name: BAND_COLOR_NAMES[b], model: ColorModel.PROCESS, space: ColorSpace.CMYK, colorValue: BAND_COLORS_CMYK[b] });\n' +
+        '        }\n' +
+        '        bandSwatches.push(doc.colors.itemByName(BAND_COLOR_NAMES[b]));\n' +
+        '    }\n\n' +
+        '    // Map each month folder key to a cycling color index\n' +
+        '    var monthColorMap = {};\n' +
+        '    var monthColorIdx = 0;\n' +
+        '    for (var m = 0; m < images.length; m++) {\n' +
+        '        var mKey = images[m].folder;\n' +
+        '        if (monthColorMap[mKey] === undefined) {\n' +
+        '            monthColorMap[mKey] = monthColorIdx % 3;\n' +
+        '            monthColorIdx++;\n' +
+        '        }\n' +
+        '    }\n\n' +
+        '    // Total pages: 1 title + ' + prefacePages + ' preface + story pages\n' +
+        '    var PREFACE_PAGES = ' + prefacePages + ';\n' +
+        '    var storyStartIndex = 1 + PREFACE_PAGES;\n' +
+        '    var totalPages = storyStartIndex + images.length;\n\n' +
+        '    // Ensure enough pages\n' +
+        '    while (doc.pages.length < totalPages) {\n' +
+        '        doc.pages.add();\n' +
+        '    }\n\n' +
+        (prefaceEnabled ?
+        '    // --- Preface spread (pages index 1 and 2) ---\n' +
+        '    var prefPage = doc.pages[2];\n' +
+        '    var prefFrame = prefPage.textFrames.add({\n' +
+        '        geometricBounds: [MARGIN_TOP, MARGIN_INSIDE, PAGE_HEIGHT - MARGIN_BOTTOM, PAGE_WIDTH - MARGIN_OUTSIDE]\n' +
+        '    });\n' +
+        '    prefFrame.contents = "PREFACE\\n\\n" + ' + JSON.stringify(prefaceBody) + ';\n' +
+        '    var prefTitleEnd = 7;\n' +
+        '    prefFrame.texts[0].characters.itemByRange(0, prefTitleEnd - 1).appliedFont = DATE_FONT;\n' +
+        '    prefFrame.texts[0].characters.itemByRange(0, prefTitleEnd - 1).fontStyle = DATE_FONT_STYLE;\n' +
+        '    prefFrame.texts[0].characters.itemByRange(0, prefTitleEnd - 1).pointSize = 36;\n' +
+        '    var prefTotal = prefFrame.contents.length;\n' +
+        '    if (prefTotal > prefTitleEnd + 2) {\n' +
+        '        prefFrame.texts[0].characters.itemByRange(prefTitleEnd + 2, prefTotal - 1).appliedFont = "Helvetica Neue";\n' +
+        '        prefFrame.texts[0].characters.itemByRange(prefTitleEnd + 2, prefTotal - 1).fontStyle = "Regular";\n' +
+        '        prefFrame.texts[0].characters.itemByRange(prefTitleEnd + 2, prefTotal - 1).pointSize = 12;\n' +
+        '        prefFrame.texts[0].characters.itemByRange(prefTitleEnd + 2, prefTotal - 1).tracking = -20;\n' +
+        '    }\n' +
+        '    prefFrame.texts[0].justification = Justification.CENTER_ALIGN;\n' +
+        '    prefFrame.textFramePreferences.verticalJustification = VerticalJustification.CENTER_ALIGN;\n\n'
+        : '') +
+        '    // Place stories\n' +
+        '    for (var i = 0; i < images.length; i++) {\n' +
+        '        var bandSwatch = bandSwatches[monthColorMap[images[i].folder]];\n' +
+        '        placeImageOnPage(doc, doc.pages[i + storyStartIndex], images[i].file, images[i].date, dateStyle, bandSwatch);\n' +
+        '    }\n\n' +
+        '    // Remove any extra pages\n' +
+        '    while (doc.pages.length > totalPages) {\n' +
+        '        doc.pages.lastItem().remove();\n' +
+        '    }\n\n' +
+        '    alert("Done! " + images.length + " stories placed.\\n" +\n' +
+        '          "Page 1 is a blank title page.' + (prefaceEnabled ? '\\nPages 2-3 are the preface spread.' : '') + '\\n" +\n' +
+        '          "Total pages: " + doc.pages.length);\n' +
+        '}\n\n' +
+        '// Run it\n' +
+        'main();\n';
+
+    return script;
+}
+
+function escapeJsx(str) {
+    return str.replace(/\\/g, '/'); // Use forward slashes for ExtendScript paths
+}
+
+/* ============================================================
+   DEBUG MODE
+   ============================================================ */
+var debugMode = false;
+var DEBUG_EXPORT = '/Users/cameronsardo/Downloads/instagram-cameronsardo-2026-02-09-CJOiekce/';
+var DEBUG_HTML_PATH = DEBUG_EXPORT + 'your_instagram_activity/media/stories.html';
+
+function toggleDebug() {
+    debugMode = !debugMode;
+    var link = document.getElementById('debug-toggle');
+    link.textContent = debugMode ? 'debug: on' : 'debug';
+    link.style.color = debugMode ? 'var(--black)' : 'var(--gray-400)';
+
+    if (debugMode) {
+        document.getElementById('config-export-path').value = DEBUG_EXPORT;
+        loadDebugFiles();
+    } else {
+        document.getElementById('config-export-path').value = '';
+        folderReady = false;
+        htmlReady = false;
+        parsedDates = {};
+        uploadedFiles = {};
+        allStories = [];
+        selectedSet.clear();
+        document.getElementById('export-status').textContent = '';
+        document.getElementById('zone-export').classList.remove('done');
+        document.getElementById('btn-upload-next').disabled = true;
+    }
+}
+
+function loadDebugFiles() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'file://' + DEBUG_HTML_PATH, true);
+    xhr.onload = function() {
+        if (xhr.status === 0 || xhr.status === 200) {
+            var content = xhr.responseText;
+            if (content && content.length > 100) {
+                parseStoriesHtml(content);
+                debugSynthesizeStories();
+                return;
+            }
+        }
+        debugFallbackPrompt();
+    };
+    xhr.onerror = function() { debugFallbackPrompt(); };
+    try { xhr.send(); } catch (e) { debugFallbackPrompt(); }
+}
+
+function debugFallbackPrompt() {
+    document.getElementById('export-status').textContent = 'Auto-load failed — please select the export folder above';
+    document.getElementById('input-export').click();
+}
+
+function debugSynthesizeStories() {
+    uploadedFiles = {};
+    allStories = [];
+    var imageCount = 0;
+    var videoCount = 0;
+
+    Object.keys(parsedDates).forEach(function(key) {
+        var info = parsedDates[key];
+        var isVideo = (info.ext === 'mp4' || info.ext === 'mov');
+        uploadedFiles[key] = 'debug';
+        allStories.push({
+            id: info.id, date: info.date, isVideo: isVideo,
+            folder: info.folder, ext: info.ext, file: null, thumbUrl: null
+        });
+        if (isVideo) videoCount++; else imageCount++;
+    });
+
+    allStories.sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
+
+    var count = Object.keys(parsedDates).length;
+    document.getElementById('export-status').textContent = imageCount + ' images, ' + videoCount + ' videos · ' + count + ' dates parsed (debug)';
+    document.getElementById('zone-export').classList.add('done');
+    folderReady = true;
+    htmlReady = true;
+    document.getElementById('btn-upload-next').disabled = false;
+}
+
+function downloadScript() {
+    var script = generateScript();
+    var blob = new Blob([script], { type: 'text/plain' });
+    var url = URL.createObjectURL(blob);
+
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'PlaceInstagramStories.jsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+</script>
+
+</body>
+</html>
