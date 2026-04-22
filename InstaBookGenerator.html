@@ -1461,7 +1461,7 @@ function generateScript() {
         '                var mp4 = File(BASE_PATH + folder + "/" + id + ".mp4");\n' +
         '                if (mp4.exists) {\n' +
         '                    var cmd = FFMPEG + " -y -i \\"" + mp4.fsName + "\\" -vframes 1 -q:v 2 \\"" + imgFile.fsName + "\\"";\n' +
-        '                    app.system(cmd);\n' +
+        '                    system(cmd);\n' +
         '                }\n' +
         '            }\n' +
         '        } else {\n' +
