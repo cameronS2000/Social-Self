@@ -96,7 +96,7 @@ header h2 {
     height: 100%;
     background: var(--black);
     transition: width 0.5s var(--ease);
-    width: 25%;
+    width: 50%;
 }
 
 .progress-label {
@@ -707,7 +707,7 @@ footer {
     <!-- PROGRESS -->
     <div class="progress-label">
         <span class="progress-step" id="progress-step-label">Upload</span>
-        <span class="progress-count" id="progress-count-label">1 / 4</span>
+        <span class="progress-count" id="progress-count-label">1 / 2</span>
     </div>
     <div class="progress-bar">
         <div class="progress-fill" id="progress-fill"></div>
@@ -734,55 +734,17 @@ footer {
         </div>
 
         <div class="btn-group">
-            <button class="btn btn-primary" id="btn-upload-next" disabled onclick="goToStep(2)">Continue to Selection</button>
+            <button class="btn btn-primary" id="btn-upload-next" disabled onclick="goToStep(4)">Continue to Generate</button>
         </div>
     </section>
 
-    <!-- STEP 2: SELECT -->
-    <section class="step-panel" id="step-2">
-        <h2 class="step-title">Select Stories</h2>
-        <p class="step-desc">Click stories to add or remove them from your book. They will appear in chronological order.</p>
-
-        <div class="selection-toolbar">
-            <div class="selection-count"><strong id="selected-total">0</strong> stories selected</div>
-            <div class="selection-actions">
-                <button onclick="selectAll()">Select All</button>
-                <button onclick="deselectAll()">Deselect All</button>
-                <button class="btn btn-primary" id="btn-select-next-top" style="padding:6px 20px;font-size:11px;" disabled onclick="goToStep(3)">Continue</button>
-            </div>
-        </div>
-
-        <div id="story-grid-container"></div>
-
-        <div class="btn-group">
-            <button class="btn btn-secondary" onclick="goToStep(1)">Back</button>
-            <button class="btn btn-primary" id="btn-select-next" disabled onclick="goToStep(3)">Continue to Configure</button>
-        </div>
-    </section>
-
-    <!-- STEP 3: CONFIGURE -->
-    <section class="step-panel" id="step-3">
-        <h2 class="step-title">Choose Style</h2>
-        <p class="step-desc">Select a style package for your book. Each package defines the font, text color, and month bar colors.</p>
-
-        <div class="style-packages" id="style-packages"></div>
-
-        <div class="preface-section">
-            <label class="preface-toggle">
-                <input type="checkbox" id="preface-enabled" onchange="togglePreface()" />
-                <span>Include Preface</span>
-            </label>
-            <div class="preface-fields" id="preface-fields">
-                <label>Preface body text</label>
-                <textarea id="preface-body" placeholder="Write your preface text here..."></textarea>
-            </div>
-        </div>
-
-        <div class="btn-group">
-            <button class="btn btn-secondary" onclick="goToStep(2)">Back</button>
-            <button class="btn btn-primary" onclick="goToStep(4)">Continue to Generate</button>
-        </div>
-    </section>
+    <!-- Hidden elements needed by JS -->
+    <input type="checkbox" id="preface-enabled" style="display:none" onchange="togglePreface()" />
+    <div id="preface-fields" style="display:none">
+        <textarea id="preface-body"></textarea>
+    </div>
+    <div id="story-grid-container" style="display:none"></div>
+    <div id="style-packages" style="display:none"></div>
 
     <!-- STEP 4: GENERATE -->
     <section class="step-panel" id="step-4">
@@ -794,7 +756,7 @@ footer {
         <button class="btn btn-primary download-btn" onclick="downloadScript()">Download .jsx Script</button>
 
         <div class="btn-group">
-            <button class="btn btn-secondary" onclick="goToStep(3)">Back</button>
+            <button class="btn btn-secondary" onclick="goToStep(1)">Back</button>
         </div>
     </section>
 
@@ -837,18 +799,22 @@ var activeStyleId = 'default';
 /* ============================================================
    STEPPER NAVIGATION
    ============================================================ */
-var stepNames = { 1: 'Upload', 2: 'Select', 3: 'Configure', 4: 'Generate' };
+var stepNames = { 1: 'Upload', 4: 'Generate' };
 
 function goToStep(n) {
     // Validation
-    if (n === 2 && (!folderReady || !htmlReady)) return;
-    if (n === 3 && selectedSet.size === 0) return;
+    if (n === 4 && (!folderReady || !htmlReady)) return;
 
-    // Update progress bar
-    var pct = (n / 4) * 100;
+    // Auto-select all stories when going to generate
+    if (n === 4) {
+        allStories.forEach(function(s) { selectedSet.add(s.id); });
+    }
+
+    // Update progress bar (step 1 = 50%, step 4 = 100%)
+    var pct = (n === 1) ? 50 : 100;
     document.getElementById('progress-fill').style.width = pct + '%';
     document.getElementById('progress-step-label').textContent = stepNames[n];
-    document.getElementById('progress-count-label').textContent = n + ' / 4';
+    document.getElementById('progress-count-label').textContent = (n === 1 ? '1' : '2') + ' / 2';
 
     // Update panels
     document.querySelectorAll('.step-panel').forEach(function(p) {
@@ -857,8 +823,6 @@ function goToStep(n) {
     document.getElementById('step-' + n).classList.add('active');
 
     // Step-specific init
-    if (n === 2) buildSelectionGrid();
-    if (n === 3) buildStylePackages();
     if (n === 4) buildSummary();
 
     window.scrollTo(0, 0);
@@ -1008,29 +972,40 @@ function getThumbPath() {
 
 function matchStories() {
     allStories = [];
+    selectedSet.clear();
 
-    Object.keys(parsedDates).forEach(function(key) {
-        var info = parsedDates[key];
-        var isVideo = (info.ext === 'mp4' || info.ext === 'mov');
-        var fileKey = info.folder + '/' + info.id + '.' + info.ext;
+    if (Object.keys(parsedDates).length > 0) {
+        // Normal path: build from parsedDates (has date info)
+        Object.keys(parsedDates).forEach(function(key) {
+            var info = parsedDates[key];
+            var isVideo = (info.ext === 'mp4' || info.ext === 'mov');
+            var fileKey = info.folder + '/' + info.id + '.' + info.ext;
+            if (uploadedFiles[fileKey]) {
+                allStories.push({ id: info.id, date: info.date, isVideo: isVideo, folder: info.folder, ext: info.ext, file: (uploadedFiles[fileKey] === 'debug') ? null : uploadedFiles[fileKey], thumbUrl: null });
+            }
+        });
+    } else {
+        // Fallback: stories.html not found — build directly from uploadedFiles
+        Object.keys(uploadedFiles).forEach(function(key) {
+            var parts = key.split('/');
+            var folder = parts[0];
+            var filename = parts[1];
+            var dotIdx = filename.lastIndexOf('.');
+            var id = filename.substring(0, dotIdx);
+            var ext = filename.substring(dotIdx + 1).toLowerCase();
+            var isVideo = (ext === 'mp4' || ext === 'mov');
+            allStories.push({ id: id, date: '', isVideo: isVideo, folder: folder, ext: ext, file: (uploadedFiles[key] === 'debug') ? null : uploadedFiles[key], thumbUrl: null });
+        });
+    }
 
-        if (uploadedFiles[fileKey]) {
-            allStories.push({
-                id: info.id,
-                date: info.date,
-                isVideo: isVideo,
-                folder: info.folder,
-                ext: info.ext,
-                file: (uploadedFiles[fileKey] === 'debug') ? null : uploadedFiles[fileKey],
-                thumbUrl: null
-            });
-        }
-    });
-
-    // Sort chronologically
+    // Sort chronologically (by date string, or folder+id as fallback)
     allStories.sort(function(a, b) {
-        return new Date(a.date) - new Date(b.date);
+        if (a.date && b.date) return new Date(a.date) - new Date(b.date);
+        return (a.folder + a.id).localeCompare(b.folder + b.id);
     });
+
+    // Auto-select every story
+    allStories.forEach(function(s) { selectedSet.add(s.id); });
 }
 
 /* ============================================================
