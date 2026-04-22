@@ -1441,6 +1441,22 @@ function generateScript() {
         '// ============================================================\n' +
         '// COLLECT IMAGES\n' +
         '// ============================================================\n' +
+        'function runShellCommand(cmd) {\n' +
+        '    if ($.os.toLowerCase().indexOf("mac") !== -1) {\n' +
+        '        var bs = String.fromCharCode(92);\n' +
+        '        var dq = String.fromCharCode(34);\n' +
+        '        var escaped = cmd.split(bs).join(bs + bs).split(dq).join(bs + dq);\n' +
+        '        return app.doScript("do shell script \\\"" + escaped + "\\\"", ScriptLanguage.APPLESCRIPT_LANGUAGE);\n' +
+        '    }\n' +
+        '    throw new Error("Shell execution is only configured for macOS in this script.");\n' +
+        '}\n\n' +
+        'function findExistingMediaFile(folder, id, exts) {\n' +
+        '    for (var i = 0; i < exts.length; i++) {\n' +
+        '        var candidate = File(BASE_PATH + folder + "/" + id + "." + exts[i]);\n' +
+        '        if (candidate.exists) return candidate;\n' +
+        '    }\n' +
+        '    return null;\n' +
+        '}\n\n' +
         'function collectImages() {\n' +
         '    var images = [];\n' +
         '    var baseFolder = Folder(BASE_PATH);\n\n' +
@@ -1454,23 +1470,23 @@ function generateScript() {
         '        var date = entry[1];\n' +
         '        var isVideo = entry[2];\n' +
         '        var folder = entry[3];\n\n' +
-        '        var imgFile;\n' +
+        '        var imgFile = null;\n' +
         '        if (isVideo) {\n' +
         '            imgFile = File(BASE_PATH + folder + "/" + id + "_frame.jpg");\n' +
         '            if (!imgFile.exists) {\n' +
-        '                var mp4 = File(BASE_PATH + folder + "/" + id + ".mp4");\n' +
-        '                if (mp4.exists) {\n' +
-        '                    var cmd = FFMPEG + " -y -i \\"" + mp4.fsName + "\\" -vframes 1 -q:v 2 \\"" + imgFile.fsName + "\\"";\n' +
-        '                    system(cmd);\n' +
+        '                var videoFile = findExistingMediaFile(folder, id, ["mp4", "mov", "MP4", "MOV"]);\n' +
+        '                if (videoFile) {\n' +
+        '                    var cmd = FFMPEG + " -y -i \\\"" + videoFile.fsName + "\\\" -vframes 1 -q:v 2 \\\"" + imgFile.fsName + "\\\"";\n' +
+        '                    runShellCommand(cmd);\n' +
         '                }\n' +
         '            }\n' +
         '        } else {\n' +
-        '            imgFile = File(BASE_PATH + folder + "/" + id + ".jpg");\n' +
+        '            imgFile = findExistingMediaFile(folder, id, ["jpg", "jpeg", "png", "JPG", "JPEG", "PNG"]);\n' +
         '        }\n\n' +
-        '        if (imgFile.exists) {\n' +
+        '        if (imgFile && imgFile.exists) {\n' +
         '            images.push({ file: imgFile, date: date, folder: folder });\n' +
         '        } else {\n' +
-        '            $.writeln("Missing file: " + imgFile.fsName);\n' +
+        '            $.writeln("Missing file for story: " + folder + "/" + id);\n' +
         '        }\n' +
         '    }\n\n' +
         '    return images;\n' +
